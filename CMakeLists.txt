@@ -44,11 +44,11 @@ include_directories(
 #create an executable
 add_executable(ray_tracer
                 main.cpp
-                rays.h
-                scene.h
-                intersect.h
-                createRay.cpp
-                intersect.cpp
+#                rays.h
+#                scene.h
+#                intersect.h
+#                createRay.cpp
+#                intersect.cpp
 )
 
 target_link_libraries(ray_tracer
