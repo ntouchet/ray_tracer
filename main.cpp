@@ -7,7 +7,9 @@
 #include <iostream>
 #include <algorithm>
 
+// TODO: please put these all in their own files when you get the chance
 
+//Sphere class
 struct sphere
 {
     glm::vec3 position {};
@@ -15,6 +17,7 @@ struct sphere
     float color[3] = {0.0,0.0,0.0};
 };
 
+// Light class
 struct light
 {
     glm::vec3 position {};
@@ -22,6 +25,7 @@ struct light
 };
 
 
+//Scene class that holds the objects, camera, and any other relevant information to the scene
 class Scene
 {
 public:
@@ -51,6 +55,7 @@ public:
     }
 
 private:
+    // Gets the lights from .scene file and makes list of all lights
     void setLights(tira::parser& scene_file)
     {
         number_of_lights = scene_file.count("light");
@@ -69,6 +74,8 @@ private:
 
 
     }
+
+    // Gets the spheres from .scene file and makes list of all lights
     void setSpheres(tira::parser& scene_file)
     {
         number_of_spheres = scene_file.count("sphere");
@@ -88,6 +95,8 @@ private:
 
 
     }
+
+//  gets camera position, up vector, lookat vector, and fov from .scene file
     void setCamera(tira::parser& scene_file)
     {
         glm::vec3 camera_position(scene_file.get<float>("camera_position",0),scene_file.get<float>("camera_position",1),scene_file.get<float>("camera_position",2));
@@ -99,12 +108,16 @@ private:
         Camera.fov(scene_file.get<float>("camera_fov",0));
 
     }
+
+    // Gets the background color of the scene
     void setBackground(tira::parser& scene_file)
     {
         background_color[0] = scene_file.get<int>("background",0);
         background_color[1] = scene_file.get<int>("background",1);
         background_color[2] = scene_file.get<int>("background",2);
     }
+
+    // Gets the resolution of the scene
     void setResolution(tira::parser& scene_file)
     {
         resolution[0] = scene_file.get<int>("resolution",0);
@@ -113,12 +126,16 @@ private:
 
 };
 
+// Class that represents a ray
 struct ray
 {
     glm::vec3 origin;
     glm::vec3 vector;
 };
 
+// This class holds relevant information about an intersect point
+// normal vector (for lighting), intersect point, weather or not there was an intersection
+// and the intensity of the RGB lighting at that point.
 struct intersect
 {
     bool intersect_state;
@@ -128,6 +145,8 @@ struct intersect
 
 };
 
+// This function detects if there was an intersect with a sphere and returns an instance of the 
+// intersect struct
 intersect sphereIntersect(sphere test_sphere, ray test_ray)
 {
     intersect final_intersect {false,{0,0,0},{0,0,0}};
@@ -159,6 +178,8 @@ intersect sphereIntersect(sphere test_sphere, ray test_ray)
 
 }
 
+// This function assigns a value to the intensity member of the intersect struct.
+// It takes the intersect and a list of all lights.
 void calculateColor(intersect& p, light* lights, int number_of_lights)
 {
     float intensity {};
@@ -214,7 +235,8 @@ int main()
                     red = static_cast<int>(255*p.intensity[0]*basic_scene.spheres[i].color[0]);
                     green = static_cast<int>(255*p.intensity[1]*basic_scene.spheres[i].color[1]);
                     blue = static_cast<int>(255*p.intensity[2]*basic_scene.spheres[i].color[2]);
-                    std::cout << "red " << red << "; green " << green << "; blue " << blue << "\n";
+
+//                   NOTE: why do I use x and y here but x and y _pixel_position in the else statement, but it works.
                     I(x,y,0)=red;
                     I(x,y,1)=green;
                     I(x,y,2)=blue;
