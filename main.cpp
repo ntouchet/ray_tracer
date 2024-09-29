@@ -186,9 +186,11 @@ void calculateColor(intersect& p, light* lights, int number_of_lights)
     float intensity_r {};
     float intensity_g {};
     float intensity_b {};
+    intersect light_line;
 
     for(int i = 0; i<number_of_lights; i++)
     {
+        light_line = sphereIntersect(, )
         glm::vec3 r = glm::normalize(lights[i].position - p.intersect_point);
         intensity = std::max(glm::dot(r,p.intersect_point_normal),static_cast<float>(0));
 
