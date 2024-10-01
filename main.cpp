@@ -133,6 +133,13 @@ struct ray
     glm::vec3 vector;
 };
 
+ray createRay(glm::vec3 origin, glm::vec3 second_point)
+{
+    ray r;
+    r.origin = origin;
+    glm::vec3 direction_vector = glm::normalize(second_point - origin);
+    return r;
+}
 // This class holds relevant information about an intersect point
 // normal vector (for lighting), intersect point, weather or not there was an intersection
 // and the intensity of the RGB lighting at that point.
@@ -180,19 +187,25 @@ intersect sphereIntersect(sphere test_sphere, ray test_ray)
 
 // This function assigns a value to the intensity member of the intersect struct.
 // It takes the intersect and a list of all lights.
-void calculateColor(intersect& p, light* lights, int number_of_lights)
+void calculateColor(intersect& p, light* lights, int number_of_lights, sphere* spheres, int number_of_spheres)
 {
     float intensity {};
     float intensity_r {};
     float intensity_g {};
     float intensity_b {};
-    intersect light_line;
+    ray light_line;
+    intersect sphere_intersect;
 
     for(int i = 0; i<number_of_lights; i++)
     {
-        light_line = sphereIntersect(, )
         glm::vec3 r = glm::normalize(lights[i].position - p.intersect_point);
         intensity = std::max(glm::dot(r,p.intersect_point_normal),static_cast<float>(0));
+        if(intensity != 0)
+        {
+            light_line = createRay(p.intersect_point,lights[i].position);
+            
+
+        }
 
         intensity_r += intensity*lights[i].color[0];
         intensity_g += intensity*lights[i].color[1];
