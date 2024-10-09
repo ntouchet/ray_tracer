@@ -3,11 +3,15 @@
 #include "scene.h"
 #include "rays.h"
 
+// This class holds relevant information about an intersect point
+// normal vector (for lighting), intersect point, weather or not there was an intersection
+// and the intensity of the RGB lighting at that point.
 struct intersect
 {
     bool intersect_state;
     glm::vec3 intersect_point = {0,0,0};
     glm::vec3 intersect_point_normal = {0,0,0};
+    float intensity[3] = {0,0,0};
 
 };
 

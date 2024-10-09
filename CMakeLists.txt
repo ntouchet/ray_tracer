@@ -14,6 +14,7 @@ set(CMAKE_CXX_STANDARD 20)
 #find_package(glfw3 CONFIG REQUIRED)
 find_package(X11 REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(PNG REQUIRED)
 #find_package(imgui CONFIG REQUIRED core glfw-binding opengl3-binding)
 #find_package(GLEW REQUIRED)
 find_package(TIRA REQUIRED)
@@ -44,17 +45,20 @@ include_directories(
 #create an executable
 add_executable(ray_tracer
                 main.cpp
-#                rays.h
-#                scene.h
-#                intersect.h
-#                createRay.cpp
-#                intersect.cpp
+                rays.h
+                scene.h
+                intersect.h
+                calculateColor.h
+                createRay.cpp
+                intersect.cpp
+                calculateColor.cpp
 )
 
 target_link_libraries(ray_tracer
 #				PRIVATE glfw
                 PRIVATE ${X11_LIBRARIES}
 				PRIVATE glm::glm
+                PRIVATE PNG::PNG
 #				PRIVATE GLEW::GLEW
 #				${OPENGL_LIBRARIES}
 #				${CMAKE_DL_LIBS}

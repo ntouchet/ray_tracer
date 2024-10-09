@@ -6,13 +6,15 @@
 #include <glm/vec3.hpp>
 
 
+//Sphere class
 struct sphere
 {
     glm::vec3 position {};
     float radius {};
-    float color[3] = {0,0,0};
+    float color[3] = {0.0,0.0,0.0};
 };
 
+// Light class
 struct light
 {
     glm::vec3 position {};
@@ -20,6 +22,7 @@ struct light
 };
 
 
+//Scene class that holds the objects, camera, and any other relevant information to the scene
 class Scene
 {
 public:
@@ -49,6 +52,7 @@ public:
     }
 
 private:
+    // Gets the lights from .scene file and makes list of all lights
     void setLights(tira::parser& scene_file)
     {
         number_of_lights = scene_file.count("light");
@@ -67,6 +71,8 @@ private:
 
 
     }
+
+    // Gets the spheres from .scene file and makes list of all lights
     void setSpheres(tira::parser& scene_file)
     {
         number_of_spheres = scene_file.count("sphere");
@@ -86,6 +92,8 @@ private:
 
 
     }
+
+//  gets camera position, up vector, lookat vector, and fov from .scene file
     void setCamera(tira::parser& scene_file)
     {
         glm::vec3 camera_position(scene_file.get<float>("camera_position",0),scene_file.get<float>("camera_position",1),scene_file.get<float>("camera_position",2));
@@ -97,12 +105,16 @@ private:
         Camera.fov(scene_file.get<float>("camera_fov",0));
 
     }
+
+    // Gets the background color of the scene
     void setBackground(tira::parser& scene_file)
     {
         background_color[0] = scene_file.get<int>("background",0);
         background_color[1] = scene_file.get<int>("background",1);
         background_color[2] = scene_file.get<int>("background",2);
     }
+
+    // Gets the resolution of the scene
     void setResolution(tira::parser& scene_file)
     {
         resolution[0] = scene_file.get<int>("resolution",0);
@@ -110,8 +122,3 @@ private:
     }
 
 };
-
-
-
-
-
