@@ -1,7 +1,9 @@
 #include "intersect.h"
 #include <cmath>
+#include <glm/geometric.hpp>
 #include <glm/glm.hpp>
-
+#include <limits>
+#include <iostream>
 
 // This function detects if there was an intersect with a sphere and returns an instance of the 
 // intersect struct
@@ -34,4 +36,29 @@ intersect sphereIntersect(sphere test_sphere, ray test_ray)
 
     return final_intersect;
 
+}
+
+
+intersect shortestIntersect(sphere* spheres, int number_of_spheres, ray r)
+{
+    intersect nearest_intersect {false,{0,0,0},{0,0,0},0};
+    intersect current_intersect {false,{0,0,0},{0,0,0},0};
+    float shortest_distance = std::numeric_limits<float>::max();
+    float current_distance;
+    for(int i = 0; i < number_of_spheres; i++)
+    {
+        current_intersect = sphereIntersect(spheres[i],r);
+        if(current_intersect.intersect_state)
+        {
+            current_distance = glm::distance(r.origin,current_intersect.intersect_point);
+            if(current_distance < shortest_distance)
+            {
+                nearest_intersect = current_intersect;
+                nearest_intersect.object_index = i;
+
+                shortest_distance = current_distance;
+            }
+        }
+    }
+    return nearest_intersect;
 }

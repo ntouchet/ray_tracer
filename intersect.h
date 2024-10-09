@@ -12,7 +12,10 @@ struct intersect
     glm::vec3 intersect_point = {0,0,0};
     glm::vec3 intersect_point_normal = {0,0,0};
     float intensity[3] = {0,0,0};
+    int object_index;
 
 };
 
 intersect sphereIntersect(sphere o, ray r);
+
+intersect shortestIntersect(sphere* o, int number_of_spheres, ray r);

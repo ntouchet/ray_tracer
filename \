@@ -41,11 +41,9 @@ int main(int argc, char* argv[])
             y_pixel_position = (static_cast<float>(y)/1000 - 0.5f);
             r.vector = basic_scene.Camera.ray(x_pixel_position,y_pixel_position);
             p = shortestIntersect(basic_scene.spheres,basic_scene.number_of_spheres,r);
-            if(p.object_index == 8)
-                std::cout << "index is 8\n";
             if(p.intersect_state)
             {
-                calculateColor(p, basic_scene.lights, basic_scene.number_of_lights, basic_scene.spheres, basic_scene.number_of_spheres);
+                calculateColor(p, basic_scene.lights, basic_scene.number_of_lights, basic_scene.spheres, basic_scene.number_of_spheres, p.object_index);
                 red = static_cast<int>(255*p.intensity[0]*basic_scene.spheres[p.object_index].color[0]);
                 green = static_cast<int>(255*p.intensity[1]*basic_scene.spheres[p.object_index].color[1]);
                 blue = static_cast<int>(255*p.intensity[2]*basic_scene.spheres[p.object_index].color[2]);

@@ -9,6 +9,7 @@ void calculateColor(intersect& p, light* lights, int number_of_lights, sphere* s
     float intensity_r {};
     float intensity_g {};
     float intensity_b {};
+    bool intersect_detected = false;
     ray light_line;
     intersect sphere_intersect;
 
@@ -16,25 +17,32 @@ void calculateColor(intersect& p, light* lights, int number_of_lights, sphere* s
     {
         glm::vec3 r = glm::normalize(lights[i].position - p.intersect_point);
         intensity = std::max(glm::dot(r,p.intersect_point_normal),static_cast<float>(0));
-        if(intensity != 0)
+        if(intensity > static_cast<float>(0))
         {
+            intersect_detected = false;
             light_line = createRay(p.intersect_point,lights[i].position);
             for(int j = 0; j < number_of_spheres; j++)
             {
-                sphere_intersect = sphereIntersect(spheres[j], light_line);
-                if(sphere_intersect.intersect_state)
+                if(j != p.object_index)
                 {
-                    intensity = 0;
-                    break;
+                    sphere_intersect = sphereIntersect(spheres[j], light_line);
+                    if(sphere_intersect.intersect_state)
+                    {
+                        intersect_detected = true;
+                        break;
+                    }
                 }
 
             }
 
         }
 
-        intensity_r += intensity*lights[i].color[0];
-        intensity_g += intensity*lights[i].color[1];
-        intensity_b += intensity*lights[i].color[2];
+        if(!intersect_detected)
+        {
+            intensity_r += intensity*lights[i].color[0];
+            intensity_g += intensity*lights[i].color[1];
+            intensity_b += intensity*lights[i].color[2];
+        }
     }
     p.intensity[0] = std::clamp(intensity_r,0.0f,1.0f);
     p.intensity[1] = std::clamp(intensity_g,0.0f,1.0f);
