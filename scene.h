@@ -4,25 +4,12 @@
 #include <tira/parser.h>
 #include <tira/graphics/camera.h>
 #include <glm/vec3.hpp>
+#include "hittableList.h"
 
-
-//Sphere class
-struct sphere
-{
-    glm::vec3 position {};
-    float radius {};
-    float color[3] = {0.0,0.0,0.0};
-};
-
-// Light class
-struct light
-{
-    glm::vec3 position {};
-    float color[3] = {0,0,0};
-};
 
 
 //Scene class that holds the objects, camera, and any other relevant information to the scene
+
 class Scene
 {
 public:

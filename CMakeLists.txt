@@ -46,12 +46,10 @@ include_directories(
 add_executable(ray_tracer
                 main.cpp
                 rays.h
-                scene.h
-                intersect.h
-                calculateColor.h
-                createRay.cpp
-                intersect.cpp
-                calculateColor.cpp
+                hittable.h
+                hittableList.h
+                sphere.h
+                plane.h
 )
 
 target_link_libraries(ray_tracer
