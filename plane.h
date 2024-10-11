@@ -2,6 +2,7 @@
 
 #include "hittable.h"
 #include <glm/glm.hpp>
+#include <cmath>
 
 
 
@@ -14,7 +15,7 @@ public:
     {
         float denom = glm::dot(normal, r.direction());
 
-        if (denom < 1e-6)
+        if (fabs(denom) < 1e-6)
             return false;
 
         float t = glm::dot(normal,point-r.origin())/denom;

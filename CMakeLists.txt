@@ -45,7 +45,9 @@ include_directories(
 #create an executable
 add_executable(ray_tracer
                 main.cpp
+                rayTracer.h
                 rays.h
+                light.h
                 hittable.h
                 hittableList.h
                 sphere.h
