@@ -30,21 +30,38 @@ public:
         hitRecord temporary_record;
         bool hit_anything = false;
         auto closest_so_far = max_val;
-        bool closest_is_plane;
+        int i = 0;
 
         for (const auto& object : objects)
         {
-            closest_is_plane =false; 
             if (object->hit(r, closest_so_far, temporary_record))
             {
+                //std::cout << "an object was hit\n";
                 hit_anything = true;
                 closest_so_far = temporary_record.t;
                 rec = temporary_record;
-                rec.object_ptr = object; 
+                rec.object_ID = i;
             }
+            i++;
         }
 
         return hit_anything;
     }
+    bool lightHit(const ray& r, float max_val, hitRecord& current_point) 
+    {
+        hitRecord temporary_record;
+        int i = 0;
+
+        for (const auto& object : objects)
+        {
+            if (object->hit(r, max_val, temporary_record) && i!=current_point.object_ID)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 };
 

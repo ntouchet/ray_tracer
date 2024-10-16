@@ -21,17 +21,16 @@ public:
     rayTracer(const char* file_name)
         : m_scene_file(file_name)
     {
-        tira::parser scene_file(file_name);
         std::cout << "File Succesfully Loaded\n";
-        setLights(scene_file);
+        setLights(m_scene_file);
         std::cout << "Lights Succesfully Loaded\n";
-        setCamera(scene_file);
+        setCamera(m_scene_file);
         std::cout << "Camera Succesfully Loaded\n";
-        setHittables(scene_file);
-        std::cout << "Hittables Succesfully Loaded\n";
-        setBackground(scene_file);
+        setHittables(m_scene_file);
+        std::cout << "Hittables Succesfully Loaded\n" << "There were: " << m_number_of_spheres << " spheres\n";
+        setBackground(m_scene_file);
         std::cout << "Background Succesfully Loaded\n";
-        setImage(scene_file);
+        setImage(m_scene_file);
         std::cout << "Image Information Succesfully Loaded\n";
     }
 
@@ -54,6 +53,7 @@ private:
     hittableList m_world;
     pointSource* m_lights;
     int m_number_of_lights;
+    int m_number_of_spheres;
     glm::vec3 m_background_color;
 
 public:
@@ -61,9 +61,9 @@ public:
     {
         tira::image<unsigned char> I(m_resolution[0],m_resolution[1],3);
 
-        glm::vec3 color;
-        float x_pixel_position;
-        float y_pixel_position;
+        glm::vec3 color = {0,0,0};
+        float x_pixel_position {};
+        float y_pixel_position {};
         hitRecord rec;
         for(int y = 0; y<m_resolution[1];y++)
         {
@@ -71,11 +71,11 @@ public:
             {
                 x_pixel_position = (static_cast<float>(x)/m_resolution[0] - 0.5f);
                 y_pixel_position = (static_cast<float>(y)/m_resolution[1] - 0.5f);
-                ray r(m_cam.position(), m_cam.ray(x_pixel_position,y_pixel_position));
+                ray r(m_cam.position(), glm::normalize(m_cam.ray(x_pixel_position,y_pixel_position)));
                 if(m_world.hit(r,m_intersect_distance_maximum,rec))
                 {
-                    color = onHit(rec);
-                    std::cout << "r " << color[0] << " " << "g " << color[1] << " " << "b " << color[2] << "\n";
+                    color = onHitShadow(rec);
+                    //std::cout << "r " << color.r << " " << "g " << color.g << " " << "b " << color.b << "\n";
                     I(x,y,0)=static_cast<int>(255*color.r);
                     I(x,y,1)=static_cast<int>(255*color.g);
                     I(x,y,2)=static_cast<int>(255*color.b);
@@ -89,10 +89,40 @@ public:
             }
         }
 
-        I.save("new.bmp");
+        I.save("shadow.bmp");
     }
 
 private:
+    glm::vec3 onHitShadow(hitRecord& rec)
+    {
+        glm::vec3 color_intensity {0.0,0.0,0.0};
+        hitRecord temp_record;
+        float intensity;
+        glm::vec3 color;
+        ray lighting_ray;
+
+        for(int i = 0; i < m_number_of_lights; i++)
+        {
+            lighting_ray = m_lights[i].generateRay(rec.p);
+            //std::cout << "LIGHT VECTOR: x " << lighting_ray.direction().x << ", y " << lighting_ray.direction().y << ", z " << lighting_ray.direction().z << "\n";
+            //std::cout << "NORMAL VECTOR: x " << rec.normal.x << ", y " << rec.normal.y << ", z " << rec.normal.z << "\n";
+            intensity = std::max(glm::dot(lighting_ray.direction(),rec.normal),static_cast<float>(0));
+            //std::cout << "intensity: " << intensity << "\n";
+            if (intensity > static_cast<float>(0))
+            {
+                if(!m_world.lightHit(lighting_ray,m_intersect_distance_maximum,rec))
+                {
+                    color_intensity.r += intensity*m_lights[i].col.r;
+                    color_intensity.g += intensity*m_lights[i].col.g;
+                    color_intensity.b += intensity*m_lights[i].col.b;
+                }
+            }
+
+        }
+        color = {std::clamp(color_intensity.r,0.0f,1.0f)*rec.color.r, std::clamp(color_intensity.g,0.0f,1.0f)*rec.color.g, std::clamp(color_intensity.b,0.0f,1.0f)*rec.color.b};
+        return color;
+
+    }
     glm::vec3 onHit(hitRecord& rec)
     {
         glm::vec3 color_intensity {0.0,0.0,0.0};
@@ -104,12 +134,14 @@ private:
         for(int i = 0; i < m_number_of_lights; i++)
         {
             lighting_ray = m_lights[i].generateRay(rec.p);
-            intensity = std::max(-glm::dot(lighting_ray.direction(),rec.normal),static_cast<float>(0));
+            //std::cout << "LIGHT VECTOR: x " << lighting_ray.direction().x << ", y " << lighting_ray.direction().y << ", z " << lighting_ray.direction().z << "\n";
+            //std::cout << "NORMAL VECTOR: x " << rec.normal.x << ", y " << rec.normal.y << ", z " << rec.normal.z << "\n";
+            intensity = std::max(glm::dot(lighting_ray.direction(),rec.normal),static_cast<float>(0));
             //std::cout << "intensity: " << intensity << "\n";
-
             color_intensity.r += intensity*m_lights[i].col.r;
             color_intensity.g += intensity*m_lights[i].col.g;
             color_intensity.b += intensity*m_lights[i].col.b;
+
         }
         color = {std::clamp(color_intensity.r,0.0f,1.0f)*rec.color.r, std::clamp(color_intensity.g,0.0f,1.0f)*rec.color.g, std::clamp(color_intensity.b,0.0f,1.0f)*rec.color.b};
         return color;
@@ -137,9 +169,9 @@ private:
     // Gets the spheres from .scene file and makes list of all lights
     void setHittables(tira::parser& scene_file)
     {
-        int number_of_spheres = scene_file.count("sphere");
+        m_number_of_spheres = scene_file.count("sphere");
 
-        for(int i=0;i<number_of_spheres;i++)
+        for(int i=0;i<m_number_of_spheres;i++)
         {
             glm::vec3 position(scene_file.get<float>("sphere",i,1),scene_file.get<float>("sphere",i,2),scene_file.get<float>("sphere",i,3));
             glm::vec3 color(scene_file.get<float>("sphere",i,4),scene_file.get<float>("sphere",i,5),scene_file.get<float>("sphere",i,6));

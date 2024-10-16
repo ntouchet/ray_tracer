@@ -19,7 +19,7 @@ class hitRecord
 public:
     glm::vec3 p;
     glm::vec3 normal;
-    std::shared_ptr<const hittable> object_ptr;
+    int object_ID;
     float t;
     glm::vec3 color;
 };
