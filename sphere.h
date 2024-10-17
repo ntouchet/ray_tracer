@@ -19,7 +19,7 @@ public:
         float radius_squared = m_radius*m_radius;
         if(l_squared < radius_squared)
         {
-            std::cout << "INSIDE SPHERE\n";
+  //          std::cout << "INSIDE SPHERE\n";
             return false;
         }
 
@@ -27,7 +27,7 @@ public:
         float s = glm::dot(l,r.direction());
         if(s<0)
         {
-            std::cout << "SPHERE BEHIND CAMERA\n";
+ //           std::cout << "SPHERE BEHIND CAMERA\n";
             return false;
         }
 
@@ -35,7 +35,7 @@ public:
         float m_squared = l_squared - (s*s);
         if(m_squared>radius_squared)
         {
-            std::cout << "M is greater than R\n";
+//            std::cout << "M is greater than R\n";
             return false;
         }
 

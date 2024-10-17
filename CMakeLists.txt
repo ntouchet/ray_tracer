@@ -52,6 +52,7 @@ add_executable(ray_tracer
                 hittableList.h
                 sphere.h
                 plane.h
+                triangle.h
 )
 
 target_link_libraries(ray_tracer

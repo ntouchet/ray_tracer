@@ -55,10 +55,10 @@ public:
         //Begin Plane Intersect test
         float denom = glm::dot(m_normal, r.direction());
 
-        if (std::fabs(denom) < 1e-6)
+        if (denom < 1e-6)
             return false;
 
-        float t = glm::dot(m_normal,(m_v[0]-r.origin()))/denom;
+        float t = -glm::dot(m_normal,(m_v[0]-r.origin()))/denom;
         if (t < 0 || t > max_dist)
             return false;
 
@@ -96,7 +96,7 @@ private:
     glm::vec3 m_normal;
     glm::vec3 m_centroid;
     float m_radius {0};
-    glm::vec3 m_color;
+    glm::vec3 m_color = {1,1,1};
     glm::vec3 m_v0v1;
     glm::vec3 m_v1v2;
     glm::vec3 m_v2v0;

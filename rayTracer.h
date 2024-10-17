@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+#include <string>
 #include <glm/fwd.hpp>
 #include <tira/parser.h>
 #include <tira/image.h>
@@ -10,6 +12,7 @@
 #include "sphere.h"
 #include "hittableList.h"
 #include "light.h"
+#include "triangle.h"
 #include <limits>
 
 
@@ -189,6 +192,39 @@ private:
             glm::vec3 normal(scene_file.get<float>("plane",i,3),scene_file.get<float>("plane",i,4),scene_file.get<float>("plane",i,5));
             std::shared_ptr<hittable> Plane = std::make_shared<plane>(point, normal, color);
             m_world.add(Plane);
+        }
+
+        int number_of_meshes = scene_file.count("mesh");
+
+        if (number_of_meshes > 0)
+        {
+        std::string mesh_file = scene_file.get<std::string>("mesh",0);
+        std::cout << mesh_file << "\n";
+        tira::parser mesh("./scenes/"+scene_file.get<std::string>("mesh",0));
+        std::vector<std::vector<unsigned int>> faces;
+        std::vector<std::vector<float>> vertices;
+        vertices = mesh.get<float>("v");
+        std::cout << vertices.size() << "\n";
+        faces = mesh.get<unsigned int>("f");
+        size_t f = faces.size();
+
+
+        for (size_t i = 0; i<f ; i++)
+        {
+            size_t v0_index = faces[i][0] - 1;
+            size_t v1_index = faces[i][1] - 1;
+            size_t v2_index = faces[i][2] - 1;
+
+            glm::vec3 v0 = {vertices[v0_index][0],vertices[v0_index][1],vertices[v0_index][2]};
+            glm::vec3 v1 = {vertices[v1_index][0],vertices[v1_index][1],vertices[v1_index][2]};
+            glm::vec3 v2 = {vertices[v2_index][0],vertices[v2_index][1],vertices[v2_index][2]};
+
+            std::shared_ptr<hittable> Triangle = std::make_shared<triangle>(v0,v1,v2);
+            m_world.add(Triangle);
+
+
+        }
+        std::cout << m_world.objects.size() << "\n";
         }
 
     }

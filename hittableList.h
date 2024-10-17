@@ -58,6 +58,7 @@ public:
             {
                 return true;
             }
+            i++;
         }
 
         return false;
