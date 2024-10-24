@@ -68,17 +68,22 @@ public:
         float x_pixel_position {};
         float y_pixel_position {};
         hitRecord rec;
+        std::cout << m_cam << "\n";
         for(int y = 0; y<m_resolution[1];y++)
         {
+            int imag_y = (m_resolution[1]-y);
             for(int x = 0; x<m_resolution[0];x++)
             {
-                x_pixel_position = (static_cast<float>(x)/m_resolution[0] - 0.5f);
-                y_pixel_position = (static_cast<float>(y)/m_resolution[1] - 0.5f);
+                x_pixel_position = (static_cast<float>(x)/(float)m_resolution[0] - 0.5f);
+                y_pixel_position = (static_cast<float>(imag_y)/(float)m_resolution[1] - 0.5f);
                 ray r(m_cam.position(), glm::normalize(m_cam.ray(x_pixel_position,y_pixel_position)));
+                //std::cout << "(" << x << ", " << y << ")";
+                //std::cout << "position: (" << r.origin().x << ", " << r.origin().y << ", " << r.origin().z << ")" << " direction: (" << r.direction().x << ", " << r.direction().y << ", " << r.direction().z << ")\n";
                 if(m_world.hit(r,m_intersect_distance_maximum,rec))
                 {
                     color = onHitShadow(rec);
                     //std::cout << "r " << color.r << " " << "g " << color.g << " " << "b " << color.b << "\n";
+
                     I(x,y,0)=static_cast<int>(255*color.r);
                     I(x,y,1)=static_cast<int>(255*color.g);
                     I(x,y,2)=static_cast<int>(255*color.b);
@@ -235,9 +240,9 @@ private:
         m_camera_position = {scene_file.get<float>("camera_position",0),scene_file.get<float>("camera_position",1),scene_file.get<float>("camera_position",2)};
         m_camera_lookat = {scene_file.get<float>("camera_look",0),scene_file.get<float>("camera_look",1),scene_file.get<float>("camera_look",2)};
         m_camera_up = {scene_file.get<float>("camera_up",0),scene_file.get<float>("camera_up",1),scene_file.get<float>("camera_up",2)};
+        m_cam.position(m_camera_position);
         m_cam.lookat(m_camera_lookat);
         m_cam.up(m_camera_up);
-        m_cam.position(m_camera_position);
         m_cam.fov(scene_file.get<float>("camera_fov",0));
 
     }
