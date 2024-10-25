@@ -2,7 +2,7 @@
 
 #include "rays.h"
 #include <glm/vec3.hpp>
-#include <memory>
+#include <string>
 
 class hitRecord;
 
@@ -11,6 +11,7 @@ class hittable
 public: 
     virtual ~hittable() = default;
     virtual bool hit(const ray& r, float max_distance, hitRecord& rec) const=0;
+    virtual std::string str() const=0;
 };
 
 

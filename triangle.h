@@ -1,7 +1,12 @@
 #pragma once
-#include <glm/fwd.hpp>
-#include <glm/geometric.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
+
+#include <string>
+#include <sstream>
+
 #include "hittable.h"
 #include "rays.h"
 
@@ -29,6 +34,13 @@ public:
                 m_radius = r;
         }
 
+    }
+
+    std::string str() const override
+    {
+        std::stringstream ss;
+        ss << "---Triangle--\n" << "Verteces: " << glm::to_string(m_v[0]) << "\n" << glm::to_string(m_v[1]) << "\n" << glm::to_string(m_v[2]) << "\nNormal: " << glm::to_string(m_normal) << "\n";
+        return ss.str();
     }
 
     bool hit(const ray& r, float max_dist, hitRecord& rec) const override

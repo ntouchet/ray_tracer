@@ -1,14 +1,28 @@
 #pragma once
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
+
+#include <sstream>
+#include <string>
+
 #include "hittable.h"
 #include "rays.h"
-#include <glm/glm.hpp>
-#include <iostream>
 
 
 class sphere : public hittable
 {
 public:
     sphere(glm::vec3 color, glm::vec3 center, float radius) : m_color(color), m_center(center), m_radius(radius) {}
+
+    std::string str() const override
+    {
+        std::stringstream ss;
+        ss<<"---Sphere---\n"<<"Center: "<<glm::to_string(m_center)<<"\nRadius: "<<m_radius<<"\nColor: "<<glm::to_string(m_color)<<"\n";
+        return ss.str();
+    }
+
 
     bool hit(const ray& r, float max_dist, hitRecord& rec) const override
     {

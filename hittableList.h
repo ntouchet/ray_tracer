@@ -1,10 +1,17 @@
 #pragma once
-#include <iostream>
-#include "hittable.h"
-#include "rays.h"
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
+
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
+#include <string>
+#include <sstream>
+
+#include "hittable.h"
+#include "rays.h"
 #include "plane.h"
 
 using std::make_shared;
@@ -13,7 +20,7 @@ using std::shared_ptr;
 class hittableList : public hittable 
 {
 public:
-    std::vector<shared_ptr<hittable>> objects;
+    std::vector<shared_ptr<hittable> > objects;
 
     hittableList() {}
     hittableList(shared_ptr<hittable> object) { add(object); }
@@ -23,6 +30,13 @@ public:
     void add(shared_ptr<hittable> object)
     {
         objects.push_back(object);
+    }
+
+    std::string str() const override
+    {
+        std::stringstream ss;
+        ss<<"---Hittables---"<<"Number of Hittables: "<<objects.size()<<"\n";
+        return ss.str();
     }
 
     bool hit(const ray& r, float max_val, hitRecord& rec) const override
