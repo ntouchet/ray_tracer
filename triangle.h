@@ -70,7 +70,7 @@ public:
         if (denom < 1e-6)
             return false;
 
-        float t = -glm::dot(m_normal,(m_v[0]-r.origin()))/denom;
+        float t = glm::dot(m_normal,(m_v[0]-r.origin()))/denom;
         if (t < 0 || t > max_dist)
             return false;
 
