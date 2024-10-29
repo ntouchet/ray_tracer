@@ -1,12 +1,9 @@
 #pragma once
-
-#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/fwd.hpp>
+#include <glm/geometric.hpp>
 #include <glm/glm.hpp>
-#include <glm/gtx/string_cast.hpp>
-
-#include <string>
-#include <sstream>
-
+#include <iostream>
+#include <limits>
 #include "hittable.h"
 #include "rays.h"
 
@@ -20,7 +17,7 @@ public:
         m_v0v1 = m_v[1] - m_v[0];
         m_v1v2 = m_v[2] - m_v[1];
         m_v2v0 = m_v[0] - m_v[2];
-        glm::vec3 n = glm::cross(m_v1v2,m_v0v1);
+        glm::vec3 n = glm::cross(m_v0v1,m_v1v2);
         m_normal = glm::normalize(n);
 
 
@@ -36,13 +33,6 @@ public:
 
     }
 
-    std::string str() const override
-    {
-        std::stringstream ss;
-        ss << "---Triangle--\n" << "Verteces: " << glm::to_string(m_v[0]) << "\n" << glm::to_string(m_v[1]) << "\n" << glm::to_string(m_v[2]) << "\nNormal: " << glm::to_string(m_normal) << "\n";
-        return ss.str();
-    }
-
     bool hit(const ray& r, float max_dist, hitRecord& rec) const override
     {
         //std::cout << "Ray:\nDirection -> x " << r.direction().x << ", y " << r.direction().y << ", z " << r.direction().y;
@@ -54,6 +44,7 @@ public:
         float s = glm::dot(l,r.direction());
         if(s<0)
         {
+            std::cout << "The bounding sphere is behind the camera\n";
             return false;
         }
 
@@ -67,12 +58,18 @@ public:
         //Begin Plane Intersect test
         float denom = glm::dot(m_normal, r.direction());
 
-        if (denom < 1e-6)
+        if (fabs(denom) < 1e-6)
+        {
+            std::cout << "The ray is parallel to the plane\n";
             return false;
+        }
 
         float t = glm::dot(m_normal,(m_v[0]-r.origin()))/denom;
         if (t < 0 || t > max_dist)
+        {
+            std::cout << "The distance to the point is out of range\n";
             return false;
+        }
 
         //Find intersect point on plane and test if point is inside triangle
         glm::vec3 p = r.at(t);
@@ -81,24 +78,35 @@ public:
         glm::vec3 pa = p-m_v[0];
         float cross1 = glm::dot(glm::cross(m_v0v1,pa),m_normal);
         if (cross1 < 0)
+        {
+            std::cout << "Not Left of first line\n";
             return false;
+        }
 
         //To the left of second line
         glm::vec3 pb = p-m_v[1];
         float cross2 = glm::dot(glm::cross(m_v1v2,pb),m_normal);
         if (cross2 < 0)
+        {
+            std::cout << "Not Left of second line\n";
             return false;
+        }
 
         //To the left of third line
         glm::vec3 pc = p-m_v[2];
         float cross3 = glm::dot(glm::cross(m_v2v0,pc),m_normal);
         if (cross3 < 0)
+        {
+            std::cout << "Not Left of third line\n";
             return false;
+        }
 
         rec.t = t;
         rec.p = p;
         rec.normal = m_normal;
         rec.color = m_color;
+
+        std::cout << "Intersect detected\n";
 
         return true;
     }
@@ -107,7 +115,7 @@ private:
     glm::vec3 m_v[3];
     glm::vec3 m_normal;
     glm::vec3 m_centroid;
-    float m_radius {0};
+    float m_radius = -std::numeric_limits<float>::infinity();
     glm::vec3 m_color = {1,1,1};
     glm::vec3 m_v0v1;
     glm::vec3 m_v1v2;
