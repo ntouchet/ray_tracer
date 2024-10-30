@@ -1,7 +1,10 @@
 #pragma once
-#include <glm/fwd.hpp>
-#include <glm/geometric.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
+
+#include <sstream>
 #include <iostream>
 #include <limits>
 #include "hittable.h"
@@ -33,6 +36,13 @@ public:
 
     }
 
+    std::string str() const override
+    {
+        std::stringstream ss;
+        ss<<"---Triangle---\n"<<"V0: "<<glm::to_string(m_v[0]) << "V1: "<<glm::to_string(m_v[1])<< "V2: "<<glm::to_string(m_v[2]) << "\nNormal: "<<m_radius<<"\nColor: "<<glm::to_string(m_color)<<"\n";
+        return ss.str();
+    }
+
     bool hit(const ray& r, float max_dist, hitRecord& rec) const override
     {
         //std::cout << "Ray:\nDirection -> x " << r.direction().x << ", y " << r.direction().y << ", z " << r.direction().y;
@@ -44,7 +54,7 @@ public:
         float s = glm::dot(l,r.direction());
         if(s<0)
         {
-            std::cout << "The bounding sphere is behind the camera\n";
+            //std::cout << "The bounding sphere is behind the camera\n";
             return false;
         }
 
@@ -60,14 +70,14 @@ public:
 
         if (fabs(denom) < 1e-6)
         {
-            std::cout << "The ray is parallel to the plane\n";
+            //std::cout << "The ray is parallel to the plane\n";
             return false;
         }
 
         float t = glm::dot(m_normal,(m_v[0]-r.origin()))/denom;
         if (t < 0 || t > max_dist)
         {
-            std::cout << "The distance to the point is out of range\n";
+            //std::cout << "The distance to the point is out of range\n";
             return false;
         }
 
@@ -79,7 +89,7 @@ public:
         float cross1 = glm::dot(glm::cross(m_v0v1,pa),m_normal);
         if (cross1 < 0)
         {
-            std::cout << "Not Left of first line\n";
+            //std::cout << "Not Left of first line\n";
             return false;
         }
 
@@ -88,7 +98,7 @@ public:
         float cross2 = glm::dot(glm::cross(m_v1v2,pb),m_normal);
         if (cross2 < 0)
         {
-            std::cout << "Not Left of second line\n";
+            //std::cout << "Not Left of second line\n";
             return false;
         }
 
@@ -97,7 +107,7 @@ public:
         float cross3 = glm::dot(glm::cross(m_v2v0,pc),m_normal);
         if (cross3 < 0)
         {
-            std::cout << "Not Left of third line\n";
+            //std::cout << "Not Left of third line\n";
             return false;
         }
 
@@ -106,7 +116,7 @@ public:
         rec.normal = m_normal;
         rec.color = m_color;
 
-        std::cout << "Intersect detected\n";
+        //std::cout << "Intersect detected\n";
 
         return true;
     }
