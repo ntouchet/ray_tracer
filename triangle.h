@@ -1,5 +1,6 @@
 #pragma once
 
+#include "timing.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
@@ -7,6 +8,8 @@
 #include <sstream>
 #include <iostream>
 #include <limits>
+
+#include "timing.h"
 #include "hittable.h"
 #include "rays.h"
 
@@ -43,7 +46,7 @@ public:
         return ss.str();
     }
 
-    bool hit(const ray& r, float max_dist, hitRecord& rec) const override
+    bool hit(const ray& r, float max_dist, hitRecord& rec, timingInfo& timing) const override
     {
         //std::cout << "Ray:\nDirection -> x " << r.direction().x << ", y " << r.direction().y << ", z " << r.direction().y;
         glm::vec3 l = m_centroid - r.origin();

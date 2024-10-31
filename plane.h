@@ -10,6 +10,7 @@
 #include <string>
 
 #include "hittable.h"
+#include "timing.h"
 
 
 
@@ -25,7 +26,7 @@ public:
         return ss.str();
     }
 
-    bool hit(const ray& r, float max_dist, hitRecord& rec) const override
+    bool hit(const ray& r, float max_dist, hitRecord& rec, timingInfo& timing) const override
     {
         float denom = glm::dot(m_normal, r.direction());
 

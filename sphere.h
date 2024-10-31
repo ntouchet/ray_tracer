@@ -6,9 +6,11 @@
 
 #include <sstream>
 #include <string>
+#include <chrono>
 
 #include "hittable.h"
 #include "rays.h"
+#include "timing.h"
 
 
 class sphere : public hittable
@@ -24,8 +26,9 @@ public:
     }
 
 
-    bool hit(const ray& r, float max_dist, hitRecord& rec) const override
+    bool hit(const ray& r, float max_dist, hitRecord& rec, timingInfo& timing) const override
     {
+
         //Test if the camera is inside the sphere
         //std::cout << "Ray:\nDirection -> x " << r.direction().x << ", y " << r.direction().y << ", z " << r.direction().y;
         glm::vec3 l = m_center - r.origin();

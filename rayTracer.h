@@ -7,11 +7,15 @@
 #include <tira/graphics/camera.h>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <chrono>
 #include <algorithm>
+#include <string>
+#include <sstream>
 #include "hittable.h"
 #include "sphere.h"
 #include "hittableList.h"
 #include "light.h"
+#include "timing.h"
 #include "triangle.h"
 #include <limits>
 
@@ -24,17 +28,17 @@ public:
     rayTracer(const char* file_name)
         : m_scene_file(file_name)
     {
-        std::cout << "File Succesfully Loaded\n";
+        //std::cout << "File Succesfully Loaded\n";
         setLights(m_scene_file);
-        std::cout << "Lights Succesfully Loaded\n";
+        //std::cout << "Lights Succesfully Loaded\n";
         setCamera(m_scene_file);
-        std::cout << "Camera Succesfully Loaded\n";
+        //std::cout << "Camera Succesfully Loaded\n";
         setHittables(m_scene_file);
-        std::cout << "Hittables Succesfully Loaded\n" << "There were: " << m_number_of_spheres << " spheres\n";
+        //std::cout << "Hittables Succesfully Loaded\n" << "There were: " << m_number_of_spheres << " spheres\n";
         setBackground(m_scene_file);
-        std::cout << "Background Succesfully Loaded\n";
+        //std::cout << "Background Succesfully Loaded\n";
         setImage(m_scene_file);
-        std::cout << "Image Information Succesfully Loaded\n";
+        //std::cout << "Image Information Succesfully Loaded\n";
     }
 
 private:
@@ -59,16 +63,33 @@ private:
     int m_number_of_spheres;
     glm::vec3 m_background_color;
 
+    //Profiling
+    timingInfo m_timing = {0,0,0,0,0,0,0};
+
 public:
+    std::string timingStr()
+    {
+        std::stringstream ss;
+        ss<<"---Timing---\n"<< "Total Trace Time (not including loading file): " << ((double)m_timing.total_trace/(1'000.0));
+        //ss<< " [s]\nDuration in Camera Ray Intersect: "<< (double)m_timing.total_ray_intersect/1000.0;
+        //ss<< " [s]\nTotal Lighting: "<< (double)m_timing.total_lighting/1000.0 << " [s]\n";
+        //ss<< " [s]\nLighting Intersect: "<< (double)m_timing.lighting_intersect/(double)m_timing.total_lighting*1000.0;
+
+        return ss.str();
+    }
+
     void trace()
     {
+
+        auto start = std::chrono::high_resolution_clock::now();
+
         tira::image<unsigned char> I(m_resolution[0],m_resolution[1],3);
 
         glm::vec3 color = {0,0,0};
         float x_pixel_position {};
         float y_pixel_position {};
         hitRecord rec;
-        std::cout << m_cam << "\n";
+        //std::cout << m_cam << "\n";
         for(int y = 0; y<m_resolution[1];y++)
         {
             int imag_y = (m_resolution[1]-y);
@@ -79,7 +100,7 @@ public:
                 ray r(m_cam.position(), glm::normalize(m_cam.ray(x_pixel_position,y_pixel_position)));
                 //std::cout << "(" << x << ", " << y << ")";
                 //std::cout << "position: (" << r.origin().x << ", " << r.origin().y << ", " << r.origin().z << ")" << " direction: (" << r.direction().x << ", " << r.direction().y << ", " << r.direction().z << ")\n";
-                if(m_world.hit(r,m_intersect_distance_maximum,rec))
+                if(m_world.hit(r,m_intersect_distance_maximum,rec, m_timing))
                 {
                     color = onHitShadow(rec);
                     //std::cout << "r " << color.r << " " << "g " << color.g << " " << "b " << color.b << "\n";
@@ -94,15 +115,23 @@ public:
                     I(x,y,1)=0;
                     I(x,y,2)=0;
                 }
+
             }
         }
 
         I.save("shadow.bmp");
+
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-start).count();
+        m_timing.total_trace = (long long)duration;
     }
 
 private:
     glm::vec3 onHitShadow(hitRecord& rec)
     {
+
+        auto start = std::chrono::high_resolution_clock::now();
+
         glm::vec3 color_intensity {0.0,0.0,0.0};
         hitRecord temp_record;
         float intensity;
@@ -118,7 +147,7 @@ private:
             //std::cout << "intensity: " << intensity << "\n";
             if (intensity > static_cast<float>(0))
             {
-                if(!m_world.lightHit(lighting_ray,m_intersect_distance_maximum,rec))
+                if(!m_world.lightHit(lighting_ray,m_intersect_distance_maximum,rec, m_timing))
                 {
                     color_intensity.r += intensity*m_lights[i].col.r;
                     color_intensity.g += intensity*m_lights[i].col.g;
@@ -128,9 +157,15 @@ private:
 
         }
         color = {std::clamp(color_intensity.r,0.0f,1.0f)*rec.color.r, std::clamp(color_intensity.g,0.0f,1.0f)*rec.color.g, std::clamp(color_intensity.b,0.0f,1.0f)*rec.color.b};
+
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-start).count();
+        m_timing.total_lighting += (long long)stop;
+
         return color;
 
     }
+
     glm::vec3 onHit(hitRecord& rec)
     {
         glm::vec3 color_intensity {0.0,0.0,0.0};
@@ -207,7 +242,7 @@ private:
             std::vector< std::vector<unsigned int> > faces;
             std::vector< std::vector<float> > vertices;
             vertices = mesh.get<float>("v");
-            std::cout << vertices.size() << "\n";
+            //std::cout << vertices.size() << "\n";
             faces = mesh.get<unsigned int>("f");
             size_t f = faces.size();
 
@@ -229,11 +264,11 @@ private:
             }
 
 
-            std::cout << m_world.objects.size() << "\n";
+            //std::cout << m_world.objects.size() << "\n";
         }
         for(const auto& object : m_world.objects)
         {
-            std::cout << object->str();
+            //std::cout << object->str();
         }
 
     }

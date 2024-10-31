@@ -6,6 +6,7 @@ project(ray_tracer LANGUAGES CXX)
 
 
 #set the module directory
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 set(CMAKE_CXX_STANDARD 20)
@@ -53,6 +54,7 @@ add_executable(ray_tracer
                 sphere.h
                 plane.h
                 triangle.h
+                timing.h
 )
 
 target_link_libraries(ray_tracer
