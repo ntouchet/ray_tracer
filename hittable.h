@@ -11,7 +11,7 @@ class hittable
 {
 public: 
     virtual ~hittable() = default;
-    virtual bool hit(const ray& r, float max_distance, hitRecord& rec, timingInfo& timing) const=0;
+    virtual bool hit(const ray& r, float max_distance, hitRecord& rec) const=0;
     virtual std::string str() const=0;
 };
 

@@ -46,7 +46,7 @@ public:
         return ss.str();
     }
 
-    bool hit(const ray& r, float max_dist, hitRecord& rec, timingInfo& timing) const override
+    bool hit(const ray& r, float max_dist, hitRecord& rec) const override
     {
         //std::cout << "Ray:\nDirection -> x " << r.direction().x << ", y " << r.direction().y << ", z " << r.direction().y;
         glm::vec3 l = m_centroid - r.origin();

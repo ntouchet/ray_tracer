@@ -46,7 +46,8 @@ include_directories(
 #create an executable
 add_executable(ray_tracer
                 main.cpp
-                rayTracer.h
+                kernel.cpp
+                calculateLighting.cpp
                 rays.h
                 light.h
                 hittable.h
@@ -54,7 +55,10 @@ add_executable(ray_tracer
                 sphere.h
                 plane.h
                 triangle.h
-                timing.h
+                kernel.h
+                calculateLighting.h
+                loadData.h
+                loadData.cpp
 )
 
 target_link_libraries(ray_tracer

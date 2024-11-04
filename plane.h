@@ -26,7 +26,7 @@ public:
         return ss.str();
     }
 
-    bool hit(const ray& r, float max_dist, hitRecord& rec, timingInfo& timing) const override
+    bool hit(const ray& r, float max_dist, hitRecord& rec) const override
     {
         float denom = glm::dot(m_normal, r.direction());
 

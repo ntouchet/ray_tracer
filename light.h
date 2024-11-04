@@ -30,3 +30,8 @@ public:
 };
 
 
+struct lighting
+{
+    pointSource* lights;
+    int number_of_lights;
+};

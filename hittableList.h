@@ -41,9 +41,8 @@ public:
         return ss.str();
     }
 
-    bool hit(const ray& r, float max_val, hitRecord& rec, timingInfo& total_lighting_time) const override
+    bool hit(const ray& r, float max_val, hitRecord& rec) const override
     {
-        auto start = std::chrono::high_resolution_clock::now();
         hitRecord temporary_record;
         bool hit_anything = false;
         auto closest_so_far = max_val;
@@ -51,7 +50,7 @@ public:
 
         for (const auto& object : objects)
         {
-            if (object->hit(r, closest_so_far, temporary_record, total_lighting_time))
+            if (object->hit(r, closest_so_far, temporary_record))
             {
                 //std::cout << "an object was hit\n";
                 hit_anything = true;
@@ -61,39 +60,24 @@ public:
             }
             i++;
         }
-
-
-        auto endTime = std::chrono::high_resolution_clock::now();
-        auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-start).count();
-        total_lighting_time.total_ray_intersect += (long long)stop;
-
         return hit_anything;
-
     }
 
 
-    bool lightHit(const ray& r, float max_val, hitRecord& current_point, timingInfo& total_lighting_time)
+    bool lightHit(const ray& r, float max_val, hitRecord& current_point) const
     {
-        auto start = std::chrono::high_resolution_clock::now();
         hitRecord temporary_record;
         int i = 0;
 
         for (const auto& object : objects)
         {
-            if (object->hit(r, max_val, temporary_record, total_lighting_time) && i!=current_point.object_ID)
+            if (object->hit(r, max_val, temporary_record) && i!=current_point.object_ID)
             {
-                auto endTime = std::chrono::high_resolution_clock::now();
-                auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-start).count();
-                total_lighting_time.lighting_intersect += (long long)stop;
-
                 return true;
             }
             i++;
         }
 
-        auto endTime = std::chrono::high_resolution_clock::now();
-        auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-start).count();
-        total_lighting_time.lighting_intersect += (long long)stop;
 
         return false;
     }

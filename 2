@@ -89,7 +89,7 @@ public:
         for(int i = 0; i<number_of_threads; i++){
             int start_index = i*strip_size;
             int end_index = (i==number_of_threads-1) ? y_res : (i+1)*strip_size;
-            threads[i] = std::thread(&rayTracer::kernel, this, start_index, end_index, image_data, m_cam, m_world, m_resolution[0], m_resolution[1]);
+            threads[i] = std::thread(&rayTracer::kernel, this, start_index, end_index, image_data);
         }
 
         for(int i = 0; i<number_of_threads; i++){
@@ -138,7 +138,7 @@ public:
                 ray r(m_cam.position(), glm::normalize(m_cam.ray(x_pixel_position,y_pixel_position)));
                 //std::cout << "(" << x << ", " << y << ")";
                 //std::cout << "position: (" << r.origin().x << ", " << r.origin().y << ", " << r.origin().z << ")" << " direction: (" << r.direction().x << ", " << r.direction().y << ", " << r.direction().z << ")\n";
-                if(m_world.hit(r,m_intersect_distance_maximum,rec))
+                if(m_world.hit(r,m_intersect_distance_maximum,rec, m_timing))
                 {
                     color = onHitShadow(rec);
                     //std::cout << "r " << color.r << " " << "g " << color.g << " " << "b " << color.b << "\n";
@@ -166,37 +166,44 @@ public:
 
 private:
 
-    void kernel(int start_row, int end_row, int* image_data, tira::camera cam, const hittableList world, const int y_res, const int x_res)
+    void kernel(int start_row, int end_row, int* image_data)
     {
 
         int x_pixel_position;
         int y_pixel_position;
         glm::vec3 color;
         hitRecord rec;
+        tira::camera cam;
+        std::cout << glm::to_string(m_camera_position) << "\n";
+        cam.position(m_camera_position);
+        cam.lookat(m_camera_lookat);
+        cam.up(m_camera_up);
+        cam.fov(m_fov);
 
+        std::cout << glm::to_string(cam.position()) << "\n";
         for(int y = start_row; y < end_row; y++)
         {
-            int imag_y = (y_res-y);
-            for(int x = 0; x<x_res;x++)
+            int imag_y = (m_resolution[1]-y);
+            for(int x = 0; x<m_resolution[0];x++)
             {
-                x_pixel_position = (static_cast<float>(x)/(float)y_res - 0.5f);
-                y_pixel_position = (static_cast<float>(imag_y)/(float)x_res - 0.5f);
+                x_pixel_position = (static_cast<float>(x)/(float)m_resolution[0] - 0.5f);
+                y_pixel_position = (static_cast<float>(imag_y)/(float)m_resolution[1] - 0.5f);
                 ray r(cam.position(), glm::normalize(cam.ray(x_pixel_position,y_pixel_position)));
 
-                if(world.hit(r,m_intersect_distance_maximum,rec))
+                if(m_world.hit(r,m_intersect_distance_maximum,rec, m_timing))
                 {
                     color = onHitShadow(rec);
                     //std::cout << rec.object_ID << " " <<glm::to_string(color) << "\n";
 
-                    image_data[3*(y*y_res+x)+0]=static_cast<int>(255*color.r);
-                    image_data[3*(y*y_res+x)+1]=static_cast<int>(255*color.g);
-                    image_data[3*(y*y_res+x)+2]=static_cast<int>(255*color.b);
+                    image_data[3*(y*m_resolution[0]+x)+0]=static_cast<int>(255*color.r);
+                    image_data[3*(y*m_resolution[0]+x)+1]=static_cast<int>(255*color.g);
+                    image_data[3*(y*m_resolution[0]+x)+2]=static_cast<int>(255*color.b);
                 }
                 else
                 {
-                    image_data[3*(y*y_res+x)+0]=0;
-                    image_data[3*(y*y_res+x)+1]=0;
-                    image_data[3*(y*y_res+x)+2]=0;
+                    image_data[3*(y*m_resolution[0]+x)+0]=0;
+                    image_data[3*(y*m_resolution[0]+x)+1]=0;
+                    image_data[3*(y*m_resolution[0]+x)+2]=0;
                 }
             }
         }
@@ -204,6 +211,10 @@ private:
 
     glm::vec3 onHitShadow(hitRecord& rec)
     {
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+
         glm::vec3 color_intensity {0.0,0.0,0.0};
         hitRecord temp_record;
         float intensity;
@@ -219,7 +230,7 @@ private:
             //std::cout << "intensity: " << intensity << "\n";
             if (intensity > static_cast<float>(0))
             {
-                if(!m_world.lightHit(lighting_ray,m_intersect_distance_maximum,rec))
+                if(!m_world.lightHit(lighting_ray,m_intersect_distance_maximum,rec, m_timing))
                 {
                     color_intensity.r += intensity*m_lights[i].col.r;
                     color_intensity.g += intensity*m_lights[i].col.g;
@@ -230,6 +241,9 @@ private:
         }
         color = {std::clamp(color_intensity.r,0.0f,1.0f)*rec.color.r, std::clamp(color_intensity.g,0.0f,1.0f)*rec.color.g, std::clamp(color_intensity.b,0.0f,1.0f)*rec.color.b};
 
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto stop = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-start).count();
+        m_timing.total_lighting += (long long)stop;
 
         return color;
 
