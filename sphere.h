@@ -61,11 +61,11 @@ public:
         float q_squared = radius_squared - m_squared;
         float q = std::sqrt(q_squared);
         float t = s - q; 
-//        if(t > max_dist)
-//        {
-//            //std::cout << "SPHERE DISTANCE TOO LARGE\n";
-//            return false;
-//        }
+        if(t > max_dist)
+        {
+            //std::cout << "SPHERE DISTANCE TOO LARGE\n";
+            return false;
+        }
         rec.t = t;
         rec.p = r.at(t);
         rec.normal = glm::normalize((rec.p - m_center));

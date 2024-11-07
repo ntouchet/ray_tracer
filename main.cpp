@@ -2,6 +2,7 @@
 #include <tira/parser.h>
 #include <thread>
 #include <tira/image.h>
+#include <vector>
 #include "loadData.h"
 #include "calculateLighting.h"
 #include "light.h"
@@ -26,7 +27,7 @@ int main(int argc, char* argv[])
     float intersect_distance_maximum = std::numeric_limits<float>::max();
 
 
-    if(number_of_threads==1)
+    if(number_of_threads==0)
     {
 
         auto start = std::chrono::high_resolution_clock::now();
@@ -83,28 +84,35 @@ int main(int argc, char* argv[])
         tira::image<unsigned char>I(resolution[0],resolution[1],3);
         int strip_size = y_res/number_of_threads;
 
-        std::thread* threads = new std::thread[number_of_threads];
+
+        int** thread_data = new int*[number_of_threads];
+        for(int i = 0 ; i<number_of_threads; i++){
+            thread_data[i] = new int[strip_size*resolution[0]*3];
+        }
+
+        std::vector<std::thread> threads;
         for(int i = 0; i<number_of_threads; i++){
             int start_index = i*strip_size;
             int end_index = (i==number_of_threads-1) ? y_res : (i+1)*strip_size;
-            threads[i] = std::thread(&kernel, start_index, end_index, image_data, cam, world, l, resolution[0], resolution[1], intersect_distance_maximum);
+            threads.emplace_back(&kernel, start_index, end_index, thread_data[i], cam, world, l, resolution[0], resolution[1], intersect_distance_maximum);
         }
 
-        for(int i = 0; i<number_of_threads; i++){
-            threads[i].join();
+        for(auto& t : threads){
+            t.join();
         }
 
-        delete[] threads;
-
-        for(int y = 0; y<resolution[1];y++)
-        {
-            for(int x = 0; x<resolution[0];x++)
-            {
-                    I(x,y,0)=image_data[3*(y*resolution[0]+x)+0];
-                    I(x,y,1)=image_data[3*(y*resolution[0]+x)+1];
-                    I(x,y,2)=image_data[3*(y*resolution[0]+x)+2];
+        for(int thread=0; thread<number_of_threads;thread++){
+            int start_index = thread*strip_size;
+            for(int y = 0; y<strip_size; y++){
+                int y_index = start_index + y;
+                for(int x = 0; x<resolution[0]; x++){
+                    I(x,y,0) = thread_data[thread][(y_index*resolution[0]+x)*3+0];
+                    I(x,y,1) = thread_data[thread][(y_index*resolution[0]+x)*3+1];
+                    I(x,y,2) = thread_data[thread][(y_index*resolution[0]+x)*3+2];
+                }
             }
         }
+
         I.save("output.bmp");
 
         delete[] image_data;
