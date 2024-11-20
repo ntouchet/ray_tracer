@@ -26,15 +26,15 @@ void kernel(int start_row, int end_row, int* image_data, tira::camera cam, const
                 //std::cout << rec.t << "\n";
                 color = onHitShadow(world, rec, intersect_distance_maximum, l.number_of_lights, l.lights);
 
-                image_data[3*(y*y_res+x)+0]=static_cast<int>(255*color.r);
-                image_data[3*(y*y_res+x)+1]=static_cast<int>(255*color.g);
-                image_data[3*(y*y_res+x)+2]=static_cast<int>(255*color.b);
+                image_data[3*(row_in_image*y_res+x)+0]=static_cast<int>(255*color.r);
+                image_data[3*(row_in_image*y_res+x)+1]=static_cast<int>(255*color.g);
+                image_data[3*(row_in_image*y_res+x)+2]=static_cast<int>(255*color.b);
             }
             else
             {
-                image_data[3*(y*y_res+x)+0]=0;
-                image_data[3*(y*y_res+x)+1]=0;
-                image_data[3*(y*y_res+x)+2]=0;
+                image_data[3*(row_in_image*y_res+x)+0]=0;
+                image_data[3*(row_in_image*y_res+x)+1]=0;
+                image_data[3*(row_in_image*y_res+x)+2]=0;
             }
         }
     }
