@@ -3,6 +3,7 @@
 #include <glm/geometric.hpp>
 #include <glm/glm.hpp>
 #include <limits>
+#include "sphere.h"
 #include <iostream>
 
 // This function detects if there was an intersect with a sphere and returns an instance of the 

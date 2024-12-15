@@ -2,7 +2,6 @@
 #include "loadData.h"
 #include "light.h"
 #include <tira/parser.h>
-#include "hittableList.h"
 #include "hittable.h"
 #include "sphere.h"
 #include "plane.h"
@@ -24,46 +23,28 @@ lighting setLights(tira::parser& scene_file)
     return l;
 }
 
-    // Gets the spheres from .scene file and makes list of all lights
-hittableList setHittables(tira::parser& scene_file)
-{
-    int number_of_spheres = scene_file.count("sphere");
-    hittableList world;
 
-    for(int i=0;i<number_of_spheres;i++)
+void loadSpheres(tira::parser& scene_file, sphere* spheres, const int nSpheres){
+    for(int i=0;i<nSpheres;i++)
     {
         glm::vec3 position(scene_file.get<float>("sphere",i,1),scene_file.get<float>("sphere",i,2),scene_file.get<float>("sphere",i,3));
         glm::vec3 color(scene_file.get<float>("sphere",i,4),scene_file.get<float>("sphere",i,5),scene_file.get<float>("sphere",i,6));
         float radius = scene_file.get<float>("sphere",i,0);
-        std::shared_ptr<hittable> Sphere = std::make_shared<sphere>(color, position, radius);
-        world.add(Sphere);
+        spheres[i].m_color = color;
+        spheres[i].m_radius = radius;
+        spheres[i].m_center = position;
     }
+};
 
-    int number_of_planes = scene_file.count("plane");
-
-    for(int i=0;i<number_of_planes;i++)
-    {
-        glm::vec3 point(scene_file.get<float>("plane",i,0),scene_file.get<float>("plane",i,1),scene_file.get<float>("plane",i,2));
-        glm::vec3 color(scene_file.get<float>("plane",i,6),scene_file.get<float>("plane",i,7),scene_file.get<float>("plane",i,8));
-        glm::vec3 normal(scene_file.get<float>("plane",i,3),scene_file.get<float>("plane",i,4),scene_file.get<float>("plane",i,5));
-        std::shared_ptr<hittable> Plane = std::make_shared<plane>(point, normal, color);
-        world.add(Plane);
-    }
-
-    int number_of_meshes = scene_file.count("mesh");
-
-    if (number_of_meshes > 0)
-    {
-        tira::parser mesh("./scenes/"+scene_file.get<std::string>("mesh",0));
+void loadMesh(tira::parser& mesh_file, triangle* triangles, const int nTriangles){
         std::vector< std::vector<unsigned int> > faces;
         std::vector< std::vector<float> > vertices;
-        vertices = mesh.get<float>("v");
+        vertices = mesh_file.get<float>("v");
         //std::cout << vertices.size() << "\n";
-        faces = mesh.get<unsigned int>("f");
-        size_t f = faces.size();
+        faces = mesh_file.get<unsigned int>("f");
 
 
-        for (size_t i = 0; i<f ; i++)
+        for (size_t i = 0; i<nTriangles ; i++)
         {
             size_t v0_index = faces[i][0] - 1;
             size_t v1_index = faces[i][1] - 1;
@@ -73,17 +54,21 @@ hittableList setHittables(tira::parser& scene_file)
             glm::vec3 v1 = {vertices[v1_index][0],vertices[v1_index][1],vertices[v1_index][2]};
             glm::vec3 v2 = {vertices[v2_index][0],vertices[v2_index][1],vertices[v2_index][2]};
 
-            std::shared_ptr<hittable> Triangle = std::make_shared<triangle>(v0,v1,v2);
-            world.add(Triangle);
-
-
+            triangles[i] = setTriangle(v0, v1, v2);
         }
+};
 
+void loadPlanes(tira::parser& scene_file, plane* planes, const int nPlanes){
 
-            //std::cout << m_world.objects.size() << "\n";
+    for(int i=0;i<nPlanes;i++)
+    {
+        glm::vec3 point(scene_file.get<float>("plane",i,0),scene_file.get<float>("plane",i,1),scene_file.get<float>("plane",i,2));
+        glm::vec3 color(scene_file.get<float>("plane",i,6),scene_file.get<float>("plane",i,7),scene_file.get<float>("plane",i,8));
+        glm::vec3 normal(scene_file.get<float>("plane",i,3),scene_file.get<float>("plane",i,4),scene_file.get<float>("plane",i,5));
+        planes[i].m_color = color;
+        planes[i].m_point = point;
+        planes[i].m_normal = normal;
     }
-    return world;
-
 }
 
 //  gets camera position, up vector, lookat vector, and fov from .scene file

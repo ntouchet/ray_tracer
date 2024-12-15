@@ -1,5 +1,5 @@
 # image properties
-resolution     10 10
+resolution     100 100
 
 # camera settings
 camera_position     2     2     -2

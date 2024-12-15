@@ -51,7 +51,6 @@ add_executable(ray_tracer
                 rays.h
                 light.h
                 hittable.h
-                hittableList.h
                 sphere.h
                 plane.h
                 triangle.h
@@ -59,6 +58,10 @@ add_executable(ray_tracer
                 calculateLighting.h
                 loadData.h
                 loadData.cpp
+                sphere.cpp
+                triangle.cpp
+                plane.cpp
+                hittable.cpp
 )
 
 target_link_libraries(ray_tracer

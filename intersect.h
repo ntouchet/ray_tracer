@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/vec3.hpp>
-#include "scene.h"
 #include "rays.h"
+#include "sphere.h"
 
 // This class holds relevant information about an intersect point
 // normal vector (for lighting), intersect point, weather or not there was an intersection

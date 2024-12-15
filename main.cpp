@@ -7,8 +7,9 @@
 #include "calculateLighting.h"
 #include "light.h"
 #include "hittable.h"
-#include "hittableList.h"
 #include "kernel.h"
+#include "triangle.h"
+#include <string>
 
 
 
@@ -20,8 +21,32 @@ int main(int argc, char* argv[])
 
     tira::parser scene_file(file);
     lighting l = setLights(scene_file);
-    hittableList world = setHittables(scene_file);
     int* resolution = setImage(scene_file);
+    int nSpheres = scene_file.count("sphere");
+    int nPlanes = scene_file.count("plane");
+    int nMeshes = scene_file.count("mesh");
+
+    int nTriangles = 0;
+    struct triangle* triangles = NULL;
+    if(nMeshes>0){
+        tira::parser mesh_file("./scenes/"+scene_file.get<std::string>("mesh",0));
+        nTriangles = mesh_file.count("f");
+        triangles = (struct triangle*)malloc(nTriangles*sizeof(struct triangle));
+        loadMesh(mesh_file, triangles, nTriangles);
+    }
+
+    struct sphere* spheres = NULL;
+    if(nSpheres>0){
+        spheres = (struct sphere*)malloc(nSpheres*sizeof(struct sphere));
+        loadSpheres(scene_file, spheres, nSpheres);
+    }
+
+    struct plane* planes = NULL;
+    if(nPlanes>0){
+        planes = (struct plane*)malloc(nPlanes*sizeof(struct plane));
+        loadPlanes(scene_file, planes, nPlanes);
+    }
+
     tira::camera cam = setCamera(scene_file);
     glm::vec3 background_color = setBackground(scene_file);
     float intersect_distance_maximum = std::numeric_limits<float>::max();
@@ -30,6 +55,7 @@ int main(int argc, char* argv[])
     if(number_of_threads==0)
     {
 
+        std::cout<<"Run Regular\n";
         auto start = std::chrono::high_resolution_clock::now();
 
 
@@ -50,9 +76,9 @@ int main(int argc, char* argv[])
                 ray r(cam.position(), glm::normalize(cam.ray(x_pixel_position,y_pixel_position)));
                 //std::cout << "(" << x << ", " << y << ")";
                 //std::cout << "position: (" << r.origin().x << ", " << r.origin().y << ", " << r.origin().z << ")" << " direction: (" << r.direction().x << ", " << r.direction().y << ", " << r.direction().z << ")\n";
-                if(world.hit(r,intersect_distance_maximum,rec))
+                if(closestHit(r, intersect_distance_maximum, rec, triangles, spheres, planes, nSpheres, nPlanes, nTriangles))
                 {
-                    color = onHitShadow(world, rec, intersect_distance_maximum, l.number_of_lights, l.lights);
+                    color = onHitShadow(spheres, triangles , planes , rec, intersect_distance_maximum, l.number_of_lights, l.lights, nSpheres, nTriangles, nPlanes);
                     //std::cout << "r " << color.r << " " << "g " << color.g << " " << "b " << color.b << "\n";
 
                     I(x,y,0)=static_cast<int>(255*color.r);
@@ -92,10 +118,11 @@ int main(int argc, char* argv[])
 
         std::vector<std::thread> threads;
         for(int i = 0; i<number_of_threads; i++){
-            //if (i == 0){
+            //if(i==0){
                 int start_index = i*strip_size;
                 int end_index = (i==number_of_threads-1) ? y_res : (i+1)*strip_size;
-                threads.emplace_back(&kernel, start_index, end_index, image_data, cam, world, l, resolution[0], resolution[1], intersect_distance_maximum);
+                threads.emplace_back(&kernel, start_index, end_index, image_data, cam, planes, triangles, spheres, l, resolution[0], resolution[1],
+                                     intersect_distance_maximum, nSpheres, nPlanes, nTriangles);
             //}
         }
 
@@ -106,11 +133,11 @@ int main(int argc, char* argv[])
         }
 
         for(int y = 0; y<resolution[1]; y++){
-            int y_i = resolution[1]-y;
+            int y_i = resolution[1]-y-1;
             for(int x = 0; x<resolution[0]; x++){
-                I(x,y,0) = image_data[(y_i*resolution[0]+x)*3+0];
-                I(x,y,1) = image_data[(y_i*resolution[0]+x)*3+1];
-                I(x,y,2) = image_data[(y_i*resolution[0]+x)*3+2];
+                I(x,y,0) = (unsigned char)image_data[(y_i*resolution[0]+x)*3+0];
+                I(x,y,1) = (unsigned char)image_data[(y_i*resolution[0]+x)*3+1];
+                I(x,y,2) = (unsigned char)image_data[(y_i*resolution[0]+x)*3+2];
             }
         }
 

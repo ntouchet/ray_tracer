@@ -1,9 +1,14 @@
 #include "rays.h"
-#include "hittableList.h"
+#include "sphere.h"
+#include "triangle.h"
+#include "plane.h"
 #include "hittable.h"
+#include "calculateLighting.h"
 #include "light.h"
+#include <algorithm>
 
-glm::vec3 onHitShadow(const hittableList& world, hitRecord& rec, float intersect_distance_maximum, int number_of_lights, pointSource* lights)
+glm::vec3 onHitShadow(const sphere* sp, const triangle* tr, const plane* pl,  hitRecord& rec, float intersect_distance_maximum, int number_of_lights, pointSource* lights, const int nSpheres,
+                      const int nTriangles, const int nPlanes)
 {
     glm::vec3 color_intensity {0.0,0.0,0.0};
     hitRecord temp_record;
@@ -20,7 +25,7 @@ glm::vec3 onHitShadow(const hittableList& world, hitRecord& rec, float intersect
         //std::cout << "intensity: " << intensity << "\n";
         if (intensity > static_cast<float>(0))
         {
-            if(!world.lightHit(lighting_ray,intersect_distance_maximum,rec))
+            if(!lightHit(lighting_ray,intersect_distance_maximum,rec, tr, sp,pl,nSpheres,nPlanes,nTriangles))
             {
                 color_intensity.r += intensity*lights[i].col.r;
                 color_intensity.g += intensity*lights[i].col.g;
