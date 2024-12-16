@@ -10,12 +10,10 @@
 #include <sstream>
 #include <numbers>
 
-namespace n_tira{
 
 class camera
 {
 public:
-
 	glm::vec3 _view;					// view vector (direction the camera is looking)
 	glm::vec3 _position;				// camera location (eye point)
 	glm::vec3 _up;						// vector pointing upwards (from the camera location)
@@ -37,7 +35,6 @@ public:
 		const float tan_theta = std::tan(fov_radians / 2.0f);								// calculate the tangent of the fov half-angle
 		_imagedist = 0.5f * (1.0f / tan_theta);                                             // return the distance to the plane
 	}
-
 	void position(const glm::vec3 pos)	{
 		_position = pos;
 	}
@@ -201,7 +198,5 @@ public:
 		return ss.str();
 	}
 };
-
-}
 
 

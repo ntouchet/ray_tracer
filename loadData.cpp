@@ -1,27 +1,23 @@
 
 #include "loadData.h"
-#include "light.h"
+#include "structs.h"
+#include "camera.h"
 #include <tira/parser.h>
-#include "hittable.h"
-#include "sphere.h"
-#include "plane.h"
-#include "triangle.h"
+#include <tira/graphics/camera.h>
 #include <memory>
 
-lighting setLights(tira::parser& scene_file)
+void setLights(tira::parser& scene_file, pointSource* lights, const int nLights)
 {
-    lighting l;
-    l.number_of_lights = scene_file.count("light");
-    l.lights = new pointSource[l.number_of_lights];
-
-    for(int i=0;i<l.number_of_lights;i++)
+    for(int i=0;i<nLights;i++)
     {
         glm::vec3 position(scene_file.get<float>("light",i,0),scene_file.get<float>("light",i,1),scene_file.get<float>("light",i,2));
         glm::vec3 color(scene_file.get<float>("light",i,3),scene_file.get<float>("light",i,4),scene_file.get<float>("light",i,5));
-        l.lights[i] = pointSource(position,color);
+        pointSource p;
+        p.col = color;
+        p.pos = position;
+        lights[i] = p;
     }
-    return l;
-}
+};
 
 
 void loadSpheres(tira::parser& scene_file, sphere* spheres, const int nSpheres){
@@ -35,6 +31,32 @@ void loadSpheres(tira::parser& scene_file, sphere* spheres, const int nSpheres){
         spheres[i].m_center = position;
     }
 };
+
+triangle setTriangle(glm::vec3 V0, glm::vec3 V1, glm::vec3 V2) {
+    triangle t;
+    t.m_v[0] = V0;
+    t.m_v[1] = V1;
+    t.m_v[2] = V2;
+
+    // Calculate Normal
+    t.m_v0v1 = t.m_v[1] - t.m_v[0];
+    t.m_v1v2 = t.m_v[2] - t.m_v[1];
+    t.m_v2v0 = t.m_v[0] - t.m_v[2];
+    glm::vec3 n = glm::cross(t.m_v0v1, t.m_v1v2);
+    t.m_normal = glm::normalize(n);
+    t.m_color = {1, 1, 1};
+
+  // Calculate bounding sphere parameters
+    t.m_centroid = (t.m_v[0] + t.m_v[1] + t.m_v[2]) / 3.0f;
+
+    for (int i = 0; i < 3; i++) {
+        float r = glm::length(t.m_centroid - t.m_v[i]);
+        if (r > t.m_radius)
+        t.m_radius = r;
+    }
+
+    return t;
+}
 
 void loadMesh(tira::parser& mesh_file, triangle* triangles, const int nTriangles){
         std::vector< std::vector<unsigned int> > faces;
@@ -72,9 +94,9 @@ void loadPlanes(tira::parser& scene_file, plane* planes, const int nPlanes){
 }
 
 //  gets camera position, up vector, lookat vector, and fov from .scene file
-tira::camera setCamera(tira::parser& scene_file)
+camera setCamera(tira::parser& scene_file)
 {
-    tira::camera cam;
+    camera cam;
     glm::vec3 camera_position = {scene_file.get<float>("camera_position",0),scene_file.get<float>("camera_position",1),scene_file.get<float>("camera_position",2)};
     glm::vec3 camera_lookat = {scene_file.get<float>("camera_look",0),scene_file.get<float>("camera_look",1),scene_file.get<float>("camera_look",2)};
     glm::vec3 camera_up = {scene_file.get<float>("camera_up",0),scene_file.get<float>("camera_up",1),scene_file.get<float>("camera_up",2)};

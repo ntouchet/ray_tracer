@@ -2,8 +2,9 @@
 cmake_minimum_required(VERSION 3.19)
 
 #Name your project here
-project(ray_tracer LANGUAGES CXX)
+project(ray_tracer LANGUAGES CXX CUDA)
 
+enable_language(CUDA)
 
 #set the module directory
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
@@ -13,6 +14,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 #find_package(OpenGL REQUIRED)
 #find_package(glfw3 CONFIG REQUIRED)
+find_package(CUDAToolkit REQUIRED)
 find_package(X11 REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(PNG REQUIRED)
@@ -39,29 +41,20 @@ file(COPY ${CMAKE_SOURCE_DIR}/scenes DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 include_directories(
 			${CMAKE_CURRENT_BINARY_DIR}
 			${CMAKE_CURRENT_SOURCE_DIR}
+            ${CUDA_INCLUDE_DIRS}
 #			${GLFW_INCLUDE_DIRS}
 			${TIRA_INCLUDE_DIRS}
 )
 
 #create an executable
 add_executable(ray_tracer
-                main.cpp
-                kernel.cpp
-                calculateLighting.cpp
-                rays.h
-                light.h
-                hittable.h
-                sphere.h
-                plane.h
-                triangle.h
+                main.cu
+                camera.h
                 kernel.h
-                calculateLighting.h
                 loadData.h
                 loadData.cpp
-                sphere.cpp
-                triangle.cpp
-                plane.cpp
-                hittable.cpp
+                functions.cu
+                structs.h
 )
 
 target_link_libraries(ray_tracer
@@ -69,6 +62,7 @@ target_link_libraries(ray_tracer
                 PRIVATE ${X11_LIBRARIES}
 				PRIVATE glm::glm
                 PRIVATE PNG::PNG
+                PRIVATE CUDA::cudart
 #				PRIVATE GLEW::GLEW
 #				${OPENGL_LIBRARIES}
 #				${CMAKE_DL_LIBS}
